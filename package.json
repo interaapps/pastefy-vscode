@@ -1,9 +1,14 @@
 {
-	"name": "pastefy",
+	"name": "InteraApps",
+	"publisher": "InteraApps",
 	"displayName": "pastefy",
 	"description": "A Pastefy VS-Code Addon",
 	"version": "0.0.1",
 	"icon": "icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/interaapps/pastefy-vscode"
+	},
 	"engines": {
 		"vscode": "^1.45.0"
 	},
