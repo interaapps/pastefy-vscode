@@ -4,15 +4,11 @@ import * as querystring from 'querystring';
 
 function createPaste(content: string){
 	if (content.trim() !== "") {
-		axios.post("https://pastefy.ga/create:paste", querystring.stringify({
+		axios.post("https://pastefy.ga/create:paste", {
 			content: content
-		}), {
-			headers: {
-			'Content-Type': 'application/x-www-form-urlencoded'
-			}
 		}).then((res)=>{
-			vscode.window.showInformationMessage('Pasted! '+"https://pastefy.ga"+res.request.path);
-			vscode.env.clipboard.writeText("https://pastefy.ga"+res.request.path);
+			vscode.window.showInformationMessage('Pasted! '+"https://pastefy.ga/"+res.data.id);
+			vscode.env.clipboard.writeText("https://pastefy.ga/"+res.data.id);
 		});	
 	} else  {
 		vscode.window.showInformationMessage("You cannot send empty code.");
