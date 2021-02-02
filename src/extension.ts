@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 import axios from 'axios';
 import * as querystring from 'querystring';
 
-function createPaste(content: string){
+function createPaste(content: string, title: string = ""){
 	if (content.trim() !== "") {
 		axios.post("https://pastefy.ga/api/v2/paste", {
-			title: "asd",
-			content: content
+			title,
+			content
 		}, {
 			headers: {
 				"x-auth-key": vscode.workspace.getConfiguration("pastefy").get("pastefyAPIKey")
@@ -25,8 +25,8 @@ function createPaste(content: string){
 export function activate(context: vscode.ExtensionContext) {
 	let explorereContextMenu = vscode.commands.registerCommand('pastefy.pasteFromExplorerContextMenu', (clickedFile: vscode.Uri, selectedFiles: vscode.Uri[]) => {
 		vscode.workspace.openTextDocument(clickedFile).then((document) => {
-			createPaste(document.getText());
-			let text = document.getText();
+			let splittedFileName = document.fileName.split("/")
+			createPaste(document.getText(), splittedFileName[splittedFileName.length-1]);
 		});
 	});
 
