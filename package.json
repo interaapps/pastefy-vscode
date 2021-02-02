@@ -3,7 +3,7 @@
 	"publisher": "InteraApps",
 	"displayName": "pastefy",
 	"description": "A Pastefy VS-Code Addon",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
@@ -42,6 +42,16 @@
 					"command": "pastefy.pasteFromEditorContextMenu"
 				}
 			]
+		},
+		"configuration": {
+			"title": "Pastefy",
+			"properties": {
+				"pastefy.pastefyAPIKey": {
+					"type": "string",
+					"default": "",
+					"description": "Use your account for pasting. (Get API-Key from https://pastefy.ga/apikeys)"
+				}	
+			}
 		}
 	},
 	"scripts": {
