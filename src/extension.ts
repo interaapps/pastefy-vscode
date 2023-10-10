@@ -5,13 +5,13 @@ function createPaste(req: {content: string, title: string}){
 	if (req.content.trim() !== "") {
 		console.log(req);
 		
-		axios.post("https://pastefy.ga/api/v2/paste", req, {
+		axios.post("https://pastefy.app/api/v2/paste", req, {
 			headers: {
 				Authorization: `Bearer ${ vscode.workspace.getConfiguration("pastefy").get("pastefyAPIKey") }`
 			}
 		}).then((res)=>{			
-			vscode.window.showInformationMessage('Pasted! '+"https://pastefy.ga/"+res.data.paste.id);
-			vscode.env.clipboard.writeText("https://pastefy.ga/"+res.data.paste.id);
+			vscode.window.showInformationMessage('Pasted! '+"https://pastefy.app/"+res.data.paste.id);
+			vscode.env.clipboard.writeText("https://pastefy.app/"+res.data.paste.id);
 		}).catch(e => {
 			console.log(e);
 			
@@ -59,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (res.success) {
 				vscode.workspace.getConfiguration("pastefy").update('pastefyAPIKey', res.code)
 
-				axios.get(`https://pastefy.ga/api/v2/user`, {
+				axios.get(`https://pastefy.app/api/v2/user`, {
 					headers: {
 						Authorization: `Bearer ${ res.code }`
 					}
