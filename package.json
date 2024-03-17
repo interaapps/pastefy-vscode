@@ -3,14 +3,14 @@
 	"publisher": "InteraApps",
 	"displayName": "pastefy",
 	"description": "A Pastefy VS-Code Addon",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/interaapps/pastefy-vscode"
 	},
 	"engines": {
-		"vscode": "^1.45.0"
+		"vscode": "^1.60.0"
 	},
 	"categories": [
 		"Other"
@@ -18,10 +18,31 @@
 	"activationEvents": [
 		"onCommand:pastefy.pasteFromExplorerContextMenu",
 		"onCommand:pastefy.login",
-		"onCommand:pastefy.pasteFromEditorContextMenu"
+		"onCommand:pastefy.pasteFromEditorContextMenu",
+		"onView:myextension-sidebar"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "pastefy-sidebar-view",
+					"title": "Pastefy",
+					"icon": "./icon.svg"
+				}
+			]
+		},
+		"views": {
+			"pastefy-sidebar-view": [
+				{
+					"type": "webview",
+					"id": "pastefy-sidebar",
+					"name": "Pastefy",
+					"icon": "./icon.svg",
+					"contextualTitle": "Pastefy"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "pastefy.pasteFromExplorerContextMenu",
@@ -54,8 +75,13 @@
 				"pastefy.pastefyAPIKey": {
 					"type": "string",
 					"default": "",
-					"description": "Use your account for pasting. (Get API-Key from https://pastefy.ga/apikeys or the Pastefy Login command)"
-				}	
+					"description": "Use your account for pasting. (Get API-Key from https://pastefy.app/apikeys or the Pastefy Login command)"
+				},
+				"pastefy.pastefyAPIBase": {
+					"type": "string",
+					"default": "https://pastefy.app",
+					"description": "Your Pastefy Instance Base URL"
+				}
 			}
 		}
 	},
@@ -68,13 +94,13 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.45.0",
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^13.11.0",
-		"eslint": "^6.8.0",
-		"@typescript-eslint/parser": "^2.30.0",
+		"@types/vscode": "^1.60.0",
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
+		"@typescript-eslint/parser": "^2.30.0",
+		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^7.1.2",
 		"typescript": "^3.8.3",
@@ -82,6 +108,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.20.0",
+		"jdomjs": "^3.1.11",
 		"querystring": "^0.2.0"
 	}
 }

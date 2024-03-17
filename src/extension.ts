@@ -1,17 +1,21 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
+import { SidebarProvider } from './SidebarProvider';
 
-function createPaste(req: {content: string, title: string}){
+function baseURL () {
+	return vscode.workspace.getConfiguration("pastefy").get("pastefyAPIBase", 'https://pastefy.app')
+}
+
+export function createPaste(req: any){
 	if (req.content.trim() !== "") {
-		console.log(req);
-		
-		axios.post("https://pastefy.app/api/v2/paste", req, {
+		return axios.post(`${baseURL()}/api/v2/paste`, req, {
 			headers: {
 				Authorization: `Bearer ${ vscode.workspace.getConfiguration("pastefy").get("pastefyAPIKey") }`
 			}
-		}).then((res)=>{			
-			vscode.window.showInformationMessage('Pasted! '+"https://pastefy.app/"+res.data.paste.id);
-			vscode.env.clipboard.writeText("https://pastefy.app/"+res.data.paste.id);
+		}).then(res => {			
+			vscode.window.showInformationMessage(`Pasted! https://pastefy.app/${res.data.paste.id}`);
+			vscode.env.clipboard.writeText(`https://pastefy.app/${res.data.paste.id}`);
+			return res.data
 		}).catch(e => {
 			console.log(e);
 			
@@ -30,6 +34,15 @@ function getSimpleFileName(name : string) : string {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+
+	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider(
+			"pastefy-sidebar",
+			sidebarProvider,
+		)
+	);
+
 	const explorereContextMenu = vscode.commands.registerCommand('pastefy.pasteFromExplorerContextMenu', (clickedFile: vscode.Uri, selectedFiles: vscode.Uri[]) => {
 		vscode.workspace.openTextDocument(clickedFile).then((document) => {
 			createPaste({
@@ -42,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const editorContextMenu = vscode.commands.registerCommand('pastefy.pasteFromEditorContextMenu', () => {
 		createPaste({
 			content: vscode.window.activeTextEditor?.document.getText(vscode.window.activeTextEditor?.selection) || "", 
-			title: `Snippet from ${vscode.window.activeTextEditor?.document.fileName}`
+			title: `Snippet from ${vscode.window.activeTextEditor?.document.fileName.split('/').slice(-1)}`
 		});
 	});
 
@@ -59,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (res.success) {
 				vscode.workspace.getConfiguration("pastefy").update('pastefyAPIKey', res.code)
 
-				axios.get(`https://pastefy.app/api/v2/user`, {
+				axios.get(`${baseURL()}/api/v2/user`, {
 					headers: {
 						Authorization: `Bearer ${ res.code }`
 					}
