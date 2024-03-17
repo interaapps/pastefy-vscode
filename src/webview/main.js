@@ -1,4 +1,4 @@
-import { $r, state, html, css, JDOMComponent } from 'jdomjs'
+import { $r, state, computed, html, css, JDOMComponent } from 'jdomjs'
 
 
 class PasteComponent extends JDOMComponent.unshadowed {
@@ -8,6 +8,8 @@ class PasteComponent extends JDOMComponent.unshadowed {
     visibility = state('UNLISTED')
 
     showSettings = state(false)
+
+    user = state(null)
 
 
     submit() {
@@ -28,11 +30,20 @@ class PasteComponent extends JDOMComponent.unshadowed {
                     this.content.value = ''
                     this.visibility.value = 'UNLISTED'
                     break
+                case 'user_update':
+                    this.user.value = message.user
+                    break
             }
         });
 
         return html`
             <form @submit.prevent=${() => this.submit()}>
+
+                ${computed(() => this.user.value 
+                    ? html`<img id="user" src=${this.user.value.profile_picture}>` 
+                    : html`<button @click.prevent.stop=${() => vscode.postMessage({ type: 'login'}) } id="login-button">Login</button>
+                `, [this.user])}
+
                 <input :bind=${this.title} placeholder="Title" id="Title-input">
                 <textarea :bind=${this.content} placeholder="Content" id="content-input" />
 
@@ -60,6 +71,26 @@ class PasteComponent extends JDOMComponent.unshadowed {
 
     styles() {
         return css`
+            #user {
+                width: 20px;
+                height: 20px;
+                border-radius: 15px;
+                object-fit: contain;
+                position: absolute;
+                right: 16px;
+                top: 4px;
+            }
+
+            #login-button {
+                position: absolute;
+                right: 16px;
+                top: 4px;
+                display: inline-block;
+                font-size: 12px;
+                width: initial;
+                padding: 3px 7px;
+            }
+
             #title-input {
                 margin-bottom: 2em;
             }

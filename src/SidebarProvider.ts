@@ -1,5 +1,6 @@
-import * as vscode from "vscode";
-import { createPaste } from './extension'
+import * as vscode from 'vscode';
+import axios from 'axios';
+import { createPaste, baseURL, setUser, login } from './extension'
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     _view?: vscode.WebviewView;
@@ -8,6 +9,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     constructor(private readonly _extensionUri: vscode.Uri) {}
 
     public resolveWebviewView(webviewView: vscode.WebviewView) {
+        axios.get(`${baseURL()}/api/v2/user`, {
+            headers: {
+                Authorization: `Bearer ${ vscode.workspace.getConfiguration("pastefy").get("pastefyAPIKey") }`
+            }
+        })
+            .then(r => r.data)
+            .then(user => {
+                setUser(user)
+            })
+
+
         this._view = webviewView;
 
         webviewView.webview.options = {
@@ -21,7 +33,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.onDidReceiveMessage(async (data) => {
             switch (data.type) {
-                case "onPaste": {
+                case "onPaste":
                     if (!data.value) {
                         return;
                     }
@@ -30,7 +42,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         webviewView.webview.postMessage({type: 'pasted', paste: res})
                     } catch (e) {}
                     break;
-                }
+                case "login":
+                    login()
+                    break;
             }
         });
 
@@ -45,11 +59,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             vscode.Uri.joinPath(this._extensionUri, "src//webview/styles.css")
         );
         const scriptUri = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "src//webview/script.js")
-        );
-
-        const jdomLibrary = webview.asWebviewUri(
-            vscode.Uri.joinPath(this._extensionUri, "node_modules/jdomjs/index.js")
+            vscode.Uri.joinPath(this._extensionUri, "src/webview/dist/main.js")
         );
         const nonce = getNonce();
 
@@ -69,13 +79,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
 			</head>
             <body>
-				<script  nonce="${nonce}" type="module">
-                    import * as jdomjs from "${jdomLibrary}";
-
-                    import { main } from "${scriptUri}";
-
-                    main({jdomjs})
-                </script>
+				<script  nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
 			</html>`;
     }

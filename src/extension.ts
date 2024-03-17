@@ -2,7 +2,48 @@ import * as vscode from 'vscode';
 import axios from 'axios';
 import { SidebarProvider } from './SidebarProvider';
 
-function baseURL () {
+
+let sidebarProvider: SidebarProvider|null = null
+export async function login() {
+	const createAccessRequest = await axios.get("https://pastefy-login.interaapps.de/create").then(r => r.data)
+
+	vscode.env.openExternal(vscode.Uri.parse(createAccessRequest.url))
+
+	let i = 0
+	const id = setInterval(async () => {
+		const res = await axios.get(`https://pastefy-login.interaapps.de/check?key=${ createAccessRequest.key }`).then(r => r.data)
+
+		if (res.success) {
+			vscode.workspace.getConfiguration("pastefy").update('pastefyAPIKey', res.code, vscode.ConfigurationTarget.Global)
+
+			axios.get(`${baseURL()}/api/v2/user`, {
+				headers: {
+					Authorization: `Bearer ${ res.code }`
+				}
+			})
+				.then(r => r.data)
+				.then(user => {
+					vscode.window.showInformationMessage(`Pastefy: Welcome back, ${ user.name }!`);
+					setUser(user)
+				})
+			
+			clearInterval(id)
+		}
+
+		if (i++ > 50) {
+			clearInterval(id)
+		}
+	}, 2500)
+}
+
+export function setUser(user: any) {
+	if (user?.logged_in) {
+		sidebarProvider?._view?.webview.postMessage({type: 'user_update', user })
+	}
+}
+
+
+export function baseURL () {
 	return vscode.workspace.getConfiguration("pastefy").get("pastefyAPIBase", 'https://pastefy.app')
 }
 
@@ -35,7 +76,7 @@ function getSimpleFileName(name : string) : string {
 
 export function activate(context: vscode.ExtensionContext) {
 
-	const sidebarProvider = new SidebarProvider(context.extensionUri);
+	sidebarProvider = new SidebarProvider(context.extensionUri);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			"pastefy-sidebar",
@@ -43,6 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
 		)
 	);
 
+	
 	const explorereContextMenu = vscode.commands.registerCommand('pastefy.pasteFromExplorerContextMenu', (clickedFile: vscode.Uri, selectedFiles: vscode.Uri[]) => {
 		vscode.workspace.openTextDocument(clickedFile).then((document) => {
 			createPaste({
@@ -60,44 +102,13 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 
-	const login = vscode.commands.registerCommand('pastefy.login', async () => {
-		const createAccessRequest = await axios.get("https://pastefy-login.interaapps.de/create").then(r => r.data)
-
-		vscode.env.openExternal(vscode.Uri.parse(createAccessRequest.url))
-
-		let i = 0
-		const id = setInterval(async () => {
-			const res = await axios.get(`https://pastefy-login.interaapps.de/check?key=${ createAccessRequest.key }`).then(r => r.data)
-
-			if (res.success) {
-				vscode.workspace.getConfiguration("pastefy").update('pastefyAPIKey', res.code)
-
-				axios.get(`${baseURL()}/api/v2/user`, {
-					headers: {
-						Authorization: `Bearer ${ res.code }`
-					}
-				})
-					.then(r => r.data)
-					.then(user => {
-						console.log(user);
-						
-						vscode.window.showInformationMessage(`Pastefy: Welcome back, ${ user.name }!`);
-					})
-				
-				clearInterval(id)
-			}
-
-			if (i++ > 50) {
-				clearInterval(id)
-			}
-		}, 2500)
-	})
+	const loginRegistered = vscode.commands.registerCommand('pastefy.login', login)
 	
 	
 	context.subscriptions.push(...[
 		explorereContextMenu,
 		editorContextMenu,
-		login
+		loginRegistered
 	]);
 }
 

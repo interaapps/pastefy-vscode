@@ -3,18 +3,19 @@
 	"publisher": "InteraApps",
 	"displayName": "pastefy",
 	"description": "A Pastefy VS-Code Addon",
-	"version": "1.0.4",
+	"version": "1.0.10",
 	"icon": "icon.png",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/interaapps/pastefy-vscode"
 	},
 	"engines": {
-		"vscode": "^1.60.0"
+		"vscode": "^1.74.0"
 	},
 	"categories": [
 		"Other"
 	],
+	"browser": "./out/web/extension.js",
 	"activationEvents": [
 		"onCommand:pastefy.pasteFromExplorerContextMenu",
 		"onCommand:pastefy.login",
@@ -86,28 +87,30 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run compile && npm run package-web",
+		"package-web": "webpack --mode production --devtool hidden-source-map",
 		"compile": "tsc -p ./",
 		"lint": "eslint src --ext ts",
-		"watch": "tsc -watch -p ./",
-		"pretest": "npm run compile && npm run lint",
-		"test": "node ./out/test/runTest.js"
+		"watch": "tsc -watch -p ./"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^7.0.2",
 		"@types/node": "^13.11.0",
-		"@types/vscode": "^1.60.0",
+		"@types/vscode": "^1.74.0",
 		"@typescript-eslint/eslint-plugin": "^2.30.0",
 		"@typescript-eslint/parser": "^2.30.0",
 		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^7.1.2",
-		"typescript": "^3.8.3",
-		"vscode-test": "^1.3.0"
+		"typescript": "^4.3.2",
+		"ts-loader": "^9.2.2",
+		"webpack": "^5.38.1",
+		"webpack-cli": "^4.7.0",
+		"@types/webpack-env": "^1.16.0"
 	},
 	"dependencies": {
-		"axios": "^0.20.0",
+		"axios": "^1.6.8",
 		"jdomjs": "^3.1.11",
 		"querystring": "^0.2.0"
 	}
